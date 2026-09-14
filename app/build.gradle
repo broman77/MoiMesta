@@ -1,0 +1,21 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ivan.moimesta'
+    compileSdk 37
+
+    defaultConfig {
+        applicationId 'com.ivan.moimesta'
+        minSdk 24
+        targetSdk 37
+        versionCode 3
+        versionName '3.0.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
