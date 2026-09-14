@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Мои места</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#f6f9fe;--surface:#fff;--text:#102a56;--muted:#7185a5;--line:#e3ebf5;
+  --blue:#0b92f5;--blue2:#37b8ff;--blueSoft:#e8f5ff;--green:#12b991;--greenSoft:#e5faf4;
+  --yellow:#ffb719;--red:#ef4c55;--purple:#9a5de8;--shadow:0 14px 42px rgba(42,78,120,.16);
+  --navH:74px;--topH:188px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text)}
+button,input,textarea,select{font:inherit}.hidden{display:none!important}.app{height:100dvh;position:relative;background:var(--bg)}
+.topbar{position:absolute;z-index:1000;left:0;right:0;top:0;height:var(--topH);padding:calc(12px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,#fff 0%,rgba(255,255,255,.985) 82%,rgba(255,255,255,.93) 100%);border-bottom:1px solid #edf2f8}
+.brand{display:flex;align-items:center;gap:11px;height:48px}.brandLogo{width:47px;height:47px;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(15,146,245,.18))}.brandText{flex:1;min-width:0}.brandText h1{margin:0;font-size:25px;line-height:1.05;letter-spacing:-.6px;color:#102c61}.brandText p{margin:4px 0 0;color:#8295b1;font-size:12.5px}.roundBtn{width:42px;height:42px;border:0;border-radius:50%;display:grid;place-items:center;background:#edf7ff;color:var(--blue);box-shadow:inset 0 0 0 1px #e1eef9}
+.searchRow{height:46px;margin-top:10px;display:flex;align-items:center;gap:10px;border:1px solid #dfe8f3;border-radius:16px;padding:0 13px;background:#fff;box-shadow:0 5px 18px rgba(32,76,118,.08)}
+.searchIcon{width:20px;height:20px;color:#7085a5;flex:0 0 auto}.searchRow input{border:0;outline:0;background:transparent;min-width:0;flex:1;color:var(--text);font-size:14px}.searchRow input::placeholder{color:#8ba0bc}.filterIcon{width:25px;height:25px;color:#3972ad}
+.filters{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.chip{border:0;border-radius:999px;background:#edf4fb;color:#3d5676;height:34px;padding:0 14px;white-space:nowrap;font-size:13px;font-weight:650;display:flex;align-items:center;gap:7px}.chip.active{background:linear-gradient(135deg,var(--blue),#1485ef);color:#fff;box-shadow:0 6px 14px rgba(14,144,245,.24)}.chip.ok{background:var(--greenSoft);color:#119874}.dotIcon{width:8px;height:8px;border-radius:50%;background:currentColor}
+.main{position:absolute;top:var(--topH);bottom:calc(var(--navH) + env(safe-area-inset-bottom));left:0;right:0;overflow:hidden}.screen{position:absolute;inset:0;display:none;overflow:auto;background:var(--bg)}.screen.active{display:block}.screen.mapScreen{overflow:hidden}#map{position:absolute;inset:0;background:#dcecf6}.leaflet-control-zoom{border:0!important;box-shadow:0 6px 20px rgba(30,66,101,.18)!important}.leaflet-control-zoom a{border:0!important;color:#285d91!important;background:#fff!important}.leaflet-control-attribution{font-size:8px!important;opacity:.65}
+.mapFloat{position:absolute;z-index:550;right:14px;bottom:18px;display:flex;flex-direction:column;gap:8px}.mapCircle{width:46px;height:46px;border:0;border-radius:50%;background:#fff;color:#287bc2;display:grid;place-items:center;box-shadow:var(--shadow)}
+.preview{position:absolute;z-index:600;left:10px;right:10px;bottom:10px;background:rgba(255,255,255,.98);border:1px solid #e7edf5;border-radius:24px;padding:14px;box-shadow:0 18px 45px rgba(34,73,110,.23);transform:translateY(calc(100% + 25px));transition:.26s ease}.preview.open{transform:translateY(0)}.drag{width:45px;height:5px;border-radius:10px;background:#b6c4d5;margin:-6px auto 10px}.previewMain{display:grid;grid-template-columns:98px 1fr 38px;gap:12px;align-items:start}.thumb{width:98px;height:98px;border-radius:17px;overflow:hidden;background:linear-gradient(145deg,#dff5ff,#e9f5ff);display:grid;place-items:center;font-size:38px}.thumb img{width:100%;height:100%;object-fit:cover}.preview h3{margin:2px 0 5px;font-size:17px;line-height:1.18}.address{display:flex;align-items:flex-start;gap:5px;color:#7185a4;font-size:12px;line-height:1.3}.starLine{display:flex;align-items:center;gap:3px;margin-top:8px;color:var(--yellow);font-size:15px}.ratingNumber{color:#294d78;font-size:12px;margin-left:4px;font-weight:700}.bookmark{border:0;width:38px;height:38px;border-radius:12px;background:#f4f8fd;color:#6683a4}.previewActions{display:flex;align-items:center;gap:8px;margin-top:12px}.miniPhotos{display:flex;gap:5px;flex:1;min-width:0}.miniPhoto{width:42px;height:42px;border-radius:10px;background:#e9f2fb;overflow:hidden;display:grid;place-items:center;color:#4a82b6;font-size:14px}.miniPhoto img{width:100%;height:100%;object-fit:cover}.moreBtn{height:40px;border:0;border-radius:12px;background:#eaf5ff;color:#1684df;font-size:12px;font-weight:700;padding:0 14px}
+.bottomNav{position:absolute;z-index:1500;left:0;right:0;bottom:0;height:calc(var(--navH) + env(safe-area-inset-bottom));padding:7px 10px env(safe-area-inset-bottom);background:rgba(255,255,255,.98);border-top:1px solid #e4ebf4;display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 -8px 30px rgba(29,68,105,.08)}.navBtn{border:0;background:transparent;color:#7b8eaa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600}.navBtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.navBtn.active{color:var(--blue)}
+.fab{position:absolute;z-index:1600;right:19px;bottom:calc(var(--navH) + env(safe-area-inset-bottom) + 14px);width:58px;height:58px;border:0;border-radius:50%;background:linear-gradient(150deg,#22b7ff,#068df2);color:#fff;font-size:34px;font-weight:300;box-shadow:0 11px 26px rgba(0,139,238,.38)}
+.listPage{padding:12px 12px 90px}.listCount{font-size:12px;color:#8092ac;margin:2px 4px 11px}.placeCard{background:#fff;border:1px solid #e7edf4;border-radius:20px;padding:10px;display:grid;grid-template-columns:86px 1fr 30px;gap:11px;align-items:center;margin-bottom:10px;box-shadow:0 5px 18px rgba(33,74,112,.07)}.placeImg{width:86px;height:86px;border-radius:15px;background:linear-gradient(145deg,#e6f6ff,#edf4fb);display:grid;place-items:center;overflow:hidden;font-size:32px}.placeImg img{width:100%;height:100%;object-fit:cover}.placeCard h3{font-size:15px;margin:0 0 5px;line-height:1.18}.placeMeta{font-size:11px;color:#7b8da8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.placeStars{margin-top:7px;color:var(--yellow);font-size:13px}.visitTick{width:30px;height:30px;border:1px solid #dce6f0;background:#f8fbff;border-radius:50%;color:#9eb0c5}.visitTick.done{border:0;background:var(--green);color:#fff}
+.statsPage,.profilePage{padding:17px 15px 90px}.pageTitle{font-size:23px;margin:0 0 5px}.pageSub{font-size:13px;color:#7d90aa;margin-bottom:17px}.statHero{background:linear-gradient(145deg,#0b94f6,#39b7ff);border-radius:24px;padding:20px;color:#fff;box-shadow:0 16px 33px rgba(15,147,245,.23)}.statHero strong{display:block;font-size:40px;line-height:1}.statHero span{font-size:13px;opacity:.88}.progressTrack{height:9px;border-radius:20px;background:rgba(255,255,255,.27);margin-top:18px;overflow:hidden}.progressFill{height:100%;width:0;border-radius:20px;background:#fff}.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.statBox{background:#fff;border:1px solid #e6edf5;border-radius:19px;padding:16px}.statBox b{display:block;font-size:25px}.statBox small{color:#7d90aa}.profileCard{background:#fff;border:1px solid #e6edf5;border-radius:22px;padding:17px;box-shadow:0 7px 22px rgba(32,71,108,.07);margin-bottom:12px}.profileBrand{display:flex;align-items:center;gap:13px}.profileBrand img{width:64px;height:64px;object-fit:contain}.profileBrand h2{font-size:20px;margin:0 0 4px}.profileBrand p{font-size:12px;color:#7c8fa9;margin:0}.settingRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-top:1px solid #edf2f7}.settingRow:first-child{border-top:0}.settingText b{font-size:14px}.settingText small{display:block;color:#8394ac;margin-top:3px}.pill{font-size:11px;border-radius:999px;padding:6px 9px;background:#eef6fd;color:#3980bd}
+.overlay{position:fixed;inset:0;z-index:4000;background:#fff;display:none;overflow:auto}.overlay.open{display:block}.overlayTop{position:sticky;top:0;z-index:5;height:62px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);display:grid;grid-template-columns:42px 1fr 42px;align-items:center;border-bottom:1px solid #eef2f6}.overlayTitle{text-align:center;font-weight:750;font-size:16px}.iconBack,.iconSave{width:38px;height:38px;border:0;border-radius:50%;background:#f5f9fd;color:#2d608e;font-size:22px}.iconSave{color:var(--blue);background:#ebf7ff;font-weight:800}.detailBody{padding:0 14px calc(25px + env(safe-area-inset-bottom))}.hero{height:215px;border-radius:20px;background:linear-gradient(145deg,#e2f3ff,#f1f7fc);margin-top:12px;overflow:hidden;position:relative;display:grid;place-items:center;font-size:64px}.hero img{width:100%;height:100%;object-fit:cover}.counter{position:absolute;right:11px;top:11px;background:#173f67dd;color:white;border-radius:999px;padding:6px 10px;font-size:11px}.detailTitle{font-size:22px;line-height:1.13;margin:15px 2px 6px}.detailAddress{font-size:13px;color:#758aa7;margin:0 2px 12px;display:flex;gap:6px}.tagRow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px}.tag{white-space:nowrap;border-radius:999px;padding:8px 12px;background:#f2eaff;color:#7a44c9;font-size:11px}.tag.blue{background:#e8f5ff;color:#1684df}.gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px}.galleryItem{height:112px;border-radius:15px;overflow:hidden;background:#eaf3fb;display:grid;place-items:center;color:#6e8dab}.galleryItem img{width:100%;height:100%;object-fit:cover}.visitedBig{width:100%;height:55px;border:0;border-radius:18px;margin-top:14px;background:#edf5fb;color:#55718f;font-weight:800;font-size:15px}.visitedBig.done{background:linear-gradient(135deg,#dff9f2,#eafbf8);color:#0da37f}.sectionLabel{font-size:13px;font-weight:800;margin:18px 2px 8px}.ratingRow{display:flex;align-items:center;gap:5px}.starBtn{border:0;background:transparent;color:#c7d3df;font-size:36px;padding:0 1px;line-height:1}.starBtn.on{color:var(--yellow)}.rateValue{margin-left:7px;color:#2d5078;font-weight:800}.commentBox{width:100%;min-height:105px;border:1px solid #dce6f0;border-radius:16px;padding:12px;outline:0;resize:vertical;color:#17385d;background:#fbfdff}.commentBox:focus{border-color:#83c8f7;box-shadow:0 0 0 3px #e8f6ff}.dangerRow{display:flex;gap:8px;margin-top:14px}.softBtn{height:45px;border:1px solid #dfe7f0;border-radius:14px;background:#fff;color:#52708f;padding:0 14px;flex:1;font-weight:700}.delete{color:#e9424f;border-color:#ffd7da;background:#fffafa}
+.addBody{padding:12px 14px calc(30px + env(safe-area-inset-bottom))}.addMapWrap{height:170px;border-radius:20px;overflow:hidden;border:1px solid #e0e8f0;position:relative;background:#eaf4fb}#addMap{height:100%;width:100%}.mapTip{position:absolute;z-index:500;left:10px;right:10px;bottom:9px;text-align:center;background:rgba(255,255,255,.92);border-radius:11px;padding:7px;font-size:11px;color:#486987;pointer-events:none}.formGroup{margin-top:14px}.formGroup label{display:block;font-size:12px;font-weight:750;margin:0 2px 6px;color:#24486e}.field{width:100%;height:48px;border:1px solid #dbe5ef;border-radius:14px;background:#fbfdff;padding:0 12px;color:#18395d;outline:0}.field:focus{border-color:#7dc4f6;box-shadow:0 0 0 3px #e9f6ff}.row2{display:grid;grid-template-columns:1fr 110px;gap:8px}.findBtn{border:0;border-radius:14px;background:#e9f6ff;color:#137fda;font-weight:750}.categorySelect{appearance:none;background:#fbfdff}.formText{min-height:92px;height:auto;padding-top:11px;resize:vertical}.saveBig{height:54px;width:100%;border:0;border-radius:17px;background:linear-gradient(145deg,#0b97f7,#0b8ff1);color:white;font-size:15px;font-weight:800;margin-top:18px;box-shadow:0 10px 20px rgba(11,145,241,.22)}.formStatus{min-height:18px;font-size:11px;color:#7289a6;margin:8px 2px 0}.addRating{display:flex;gap:3px}.addRating .starBtn{font-size:33px}
+body.tab-stats,body.tab-profile{--topH:79px}.tab-stats .topbar .searchRow,.tab-stats .topbar .filters,.tab-profile .topbar .searchRow,.tab-profile .topbar .filters{display:none}.tab-stats .brandText p,.tab-profile .brandText p{display:none}.tab-stats .brand,.tab-profile .brand{height:52px}
+.toast{position:fixed;z-index:6000;left:50%;bottom:calc(var(--navH) + 25px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#173a5d;color:white;border-radius:999px;padding:9px 14px;font-size:12px;box-shadow:var(--shadow);transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:760px){.app{max-width:540px;margin:0 auto;box-shadow:0 0 60px #c8d6e4}.overlay{left:50%;right:auto;width:540px;transform:translateX(-50%)}body{background:#e9f0f7}}
+
+/* v3: темы, экспорт и резервные копии */
+.settingsTitle{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8aa0bb;margin:18px 4px 8px}
+.settingAction{border:0;background:transparent;width:100%;padding:0;text-align:left;color:inherit;cursor:pointer}.settingAction .settingRow{min-height:67px}
+.settingIcon{width:40px;height:40px;flex:0 0 auto;border-radius:13px;display:grid;place-items:center;background:#eef6ff;color:var(--blue);font-size:19px}.settingRowInner{display:flex;align-items:center;gap:11px;min-width:0;flex:1}
+.chevron{color:#9aabc0;font-size:22px}.themePicker{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}.themeBtn{height:42px;border:1px solid var(--line);border-radius:13px;background:var(--bg);color:var(--muted);font-weight:750;font-size:12px}.themeBtn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 5px 15px rgba(11,146,245,.2)}
+.backupInfo{margin-top:10px;border-radius:15px;padding:11px 12px;background:var(--blueSoft);color:#3c638d;font-size:11px;line-height:1.45}.dataSummary{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.dataSummary span{border-radius:999px;padding:6px 9px;background:#f0f5fa;color:#607894;font-size:10px;font-weight:700}
+body.theme-dark{--bg:#0e1624;--surface:#172234;--text:#eaf3ff;--muted:#91a5bf;--line:#29384c;--blueSoft:#102d47;--greenSoft:#10372f;--shadow:0 14px 42px rgba(0,0,0,.35)}
+body.theme-dark,body.theme-dark .app,body.theme-dark .screen{background:var(--bg);color:var(--text)}
+body.theme-dark .topbar{background:linear-gradient(180deg,#151f30 0%,rgba(21,31,48,.99) 82%,rgba(21,31,48,.95) 100%);border-color:#243247}
+body.theme-dark .brandText h1,body.theme-dark .pageTitle,body.theme-dark .placeCard h3,body.theme-dark .profileBrand h2,body.theme-dark .detailTitle,body.theme-dark .overlayTitle,body.theme-dark label{color:var(--text)}
+body.theme-dark .searchRow,body.theme-dark .placeCard,body.theme-dark .statBox,body.theme-dark .profileCard,body.theme-dark .preview,body.theme-dark .overlay,body.theme-dark .overlayTop,body.theme-dark .field,body.theme-dark .commentBox,body.theme-dark .softBtn{background:#172234;color:var(--text);border-color:#29384c}
+body.theme-dark .bottomNav{background:rgba(21,31,48,.98);border-color:#29384c;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+body.theme-dark .searchRow input,body.theme-dark .field,body.theme-dark .commentBox,body.theme-dark select{color:var(--text)}
+body.theme-dark .chip{background:#1e2c40;color:#a9bad0}.theme-dark .chip.active{background:linear-gradient(135deg,#128fe8,#0c75cf);color:#fff}.theme-dark .chip.ok{background:#10372f;color:#48d7b5}
+body.theme-dark .roundBtn,body.theme-dark .bookmark,body.theme-dark .mapCircle{background:#203047;color:#65baf8;border-color:#2c4058}.theme-dark .moreBtn{background:#15334e;color:#65baf8}
+body.theme-dark .settingRow{border-color:#27364a}.theme-dark .settingIcon{background:#15334e;color:#65baf8}.theme-dark .dataSummary span{background:#202e41;color:#a5b8cf}.theme-dark .backupInfo{background:#142b42;color:#9dc6e9}.theme-dark .themeBtn{background:#111c2c;border-color:#2c3d52;color:#a9bbcf}.theme-dark .themeBtn.active{background:#138ee8;color:#fff}
+body.theme-dark .overlayTop{box-shadow:0 5px 18px rgba(0,0,0,.15)}.theme-dark .iconBack,.theme-dark .iconSave{color:#7bc5fb}.theme-dark .dangerRow .delete{background:#351d24;color:#ff8d96;border-color:#5d2a33}
+body.theme-dark .leaflet-control-zoom a{background:#172234!important;color:#e8f4ff!important}.theme-dark .leaflet-control-attribution{background:rgba(17,27,42,.8)!important;color:#b2c2d6!important}
+
+</style>
+</head>
+<body class="tab-map">
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <img class="brandLogo" src="logo.png" alt="Мои места">
+      <div class="brandText"><h1>Мои места</h1><p>Открывай. Сохраняй. Помни.</p></div>
+      <button class="roundBtn" id="profileShortcut" aria-label="Профиль">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+      </button>
+    </div>
+    <div class="searchRow">
+      <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" placeholder="Поиск мест и адресов…">
+      <svg class="filterIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h7M15 18h5"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="13" cy="18" r="2"/></svg>
+    </div>
+    <div class="filters">
+      <button class="chip active" data-filter="all"><span class="dotIcon"></span>Все</button>
+      <button class="chip" data-filter="todo">◷ Не были</button>
+      <button class="chip ok" data-filter="done">✓ Посетили</button>
+      <button class="chip" data-filter="rated">★ С оценкой</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="screen mapScreen active" id="screen-map">
+      <div id="map"></div>
+      <div class="mapFloat"><button class="mapCircle" id="fitAll" aria-label="Показать все места"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9"/></svg></button></div>
+      <article class="preview" id="preview">
+        <div class="drag"></div>
+        <div class="previewMain">
+          <div class="thumb" id="previewThumb">📍</div>
+          <div><h3 id="previewName">Место</h3><div class="address" id="previewAddress">Москва</div><div class="starLine" id="previewStars"></div></div>
+          <button class="bookmark" aria-label="Сохранено">♡</button>
+        </div>
+        <div class="previewActions"><div class="miniPhotos" id="previewPhotos"></div><button class="moreBtn" id="previewMore">Подробнее →</button></div>
+      </article>
+    </section>
+
+    <section class="screen" id="screen-list"><div class="listPage"><div class="listCount" id="listCount"></div><div id="placesList"></div></div></section>
+    <section class="screen" id="screen-stats"><div class="statsPage"><h2 class="pageTitle">Статистика</h2><div class="pageSub">Как продвигается список ваших мест</div><div class="statHero"><strong id="statDone">0</strong><span>мест уже посещено</span><div class="progressTrack"><div class="progressFill" id="statProgress"></div></div></div><div class="statGrid"><div class="statBox"><b id="statAll">0</b><small>всего мест</small></div><div class="statBox"><b id="statAvg">—</b><small>средняя оценка</small></div><div class="statBox"><b id="statFive">0</b><small>оценок 5★</small></div><div class="statBox"><b id="statNotes">0</b><small>с комментариями</small></div></div></div></section>
+    <section class="screen" id="screen-profile"><div class="profilePage">
+      <div class="profileCard"><div class="profileBrand"><img src="logo.png" alt=""><div><h2>Мои места</h2><p>Личный список впечатлений и планов</p></div></div><div class="dataSummary" id="dataSummary"></div></div>
+      <div class="settingsTitle">Оформление</div>
+      <div class="profileCard"><div class="settingText"><b>Тема приложения</b><small>Можно использовать тему телефона или выбрать вручную</small></div><div class="themePicker"><button class="themeBtn" data-theme="system">Системная</button><button class="themeBtn" data-theme="light">Светлая</button><button class="themeBtn" data-theme="dark">Тёмная</button></div></div>
+      <div class="settingsTitle">Экспорт и перенос</div>
+      <div class="profileCard">
+        <button class="settingAction" id="exportExcel"><div class="settingRow"><div class="settingRowInner"><div class="settingIcon">▦</div><div class="settingText"><b>Выгрузить в Excel</b><small>Все места, адреса, оценки, статусы и комментарии</small></div></div><span class="chevron">›</span></div></button>
+        <button class="settingAction" id="exportBackup"><div class="settingRow"><div class="settingRowInner"><div class="settingIcon">⇩</div><div class="settingText"><b>Скачать резервную копию</b><small>Файл для полного переноса данных на другой телефон</small></div></div><span class="chevron">›</span></div></button>
+        <button class="settingAction" id="importBackup"><div class="settingRow"><div class="settingRowInner"><div class="settingIcon">⇧</div><div class="settingText"><b>Загрузить резервную копию</b><small>Восстановить места, оценки, комментарии и посещения</small></div></div><span class="chevron">›</span></div></button>
+        <div class="backupInfo">Совет: после важных изменений сохраняйте резервную копию. Её можно отправить себе в облако или мессенджер, а затем импортировать на другом Android-телефоне.</div>
+      </div>
+      <div class="settingsTitle">О приложении</div>
+      <div class="profileCard"><div class="settingRow"><div class="settingText"><b>Данные приложения</b><small>Основная база хранится локально на телефоне</small></div><span class="pill">Локально</span></div><div class="settingRow"><div class="settingText"><b>Карта и фотографии</b><small>Для карты, поиска адресов и фото нужен интернет</small></div><span class="pill">Онлайн</span></div><div class="settingRow"><div class="settingText"><b>Версия</b><small>Темы, Excel и перенос между телефонами</small></div><span class="pill">3.0</span></div></div>
+    </div></section>
+  </main>
+
+  <button class="fab" id="fab" aria-label="Добавить место">+</button>
+  <nav class="bottomNav">
+    <button class="navBtn active" data-tab="map"><svg viewBox="0 0 24 24"><path d="m3 6 5-3 8 3 5-3v15l-5 3-8-3-5 3z"/><path d="M8 3v15M16 6v15"/></svg><span>Карта</span></button>
+    <button class="navBtn" data-tab="list"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>Список</span></button>
+    <button class="navBtn" data-tab="stats"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>Статистика</span></button>
+    <button class="navBtn" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg><span>Профиль</span></button>
+  </nav>
+</div>
+
+<section class="overlay" id="detailOverlay">
+  <div class="overlayTop"><button class="iconBack" id="detailBack">‹</button><div class="overlayTitle">Место</div><button class="iconSave" id="detailDone">✓</button></div>
+  <div class="detailBody">
+    <div class="hero" id="detailHero">📍<span class="counter" id="photoCounter">0 фото</span></div>
+    <h2 class="detailTitle" id="detailName"></h2><div class="detailAddress" id="detailAddress"></div>
+    <div class="tagRow"><span class="tag" id="detailCategory">Место</span><span class="tag blue" id="detailCity">Москва</span></div>
+    <div class="gallery" id="detailGallery"></div>
+    <button class="visitedBig" id="detailVisited">Отметить как посещённое</button>
+    <div class="sectionLabel">Ваша оценка</div><div class="ratingRow" id="detailRating"></div>
+    <div class="sectionLabel">Ваш комментарий</div><textarea class="commentBox" id="detailComment" maxlength="1000" placeholder="Что запомнилось? Что попробовать в следующий раз?"></textarea>
+    <div class="dangerRow"><button class="softBtn" id="detailMapBtn">Показать на карте</button><button class="softBtn delete" id="detailDelete">Удалить</button></div>
+  </div>
+</section>
+
+<section class="overlay" id="addOverlay">
+  <div class="overlayTop"><button class="iconBack" id="addBack">×</button><div class="overlayTitle">Добавить место</div><button class="iconSave" id="addSaveTop">✓</button></div>
+  <div class="addBody">
+    <div class="addMapWrap"><div id="addMap"></div><div class="mapTip">Нажмите на карту, чтобы поставить точку</div></div>
+    <div class="formGroup"><label>Название места *</label><input class="field" id="addName" placeholder="Например: Нескучный сад"></div>
+    <div class="formGroup"><label>Категория</label><select class="field categorySelect" id="addCategory"><option>Достопримечательность</option><option>Парк</option><option>Музей</option><option>Развлечение</option><option>Кино</option><option>Спорт</option><option>Кафе / ресторан</option><option>Другое</option></select></div>
+    <div class="formGroup"><label>Адрес / местоположение</label><div class="row2"><input class="field" id="addAddress" placeholder="Москва, адрес или район"><button class="findBtn" id="findAddress">Найти</button></div></div>
+    <div class="formGroup"><label>Ваш комментарий</label><textarea class="field formText" id="addComment" maxlength="1000" placeholder="Что хотите запомнить об этом месте?"></textarea></div>
+    <div class="formGroup"><label>Ваша оценка</label><div class="addRating" id="addRating"></div></div>
+    <div class="formStatus" id="addStatus"></div><button class="saveBig" id="addSave">Сохранить место</button>
+  </div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const STORAGE_KEY='moi_mesta_v1';
+const THEME_KEY='moi_mesta_theme_v1';
+const BACKUP_FORMAT='moi-mesta-backup';
+const BACKUP_VERSION=1;
+const seed=[
+{name:'Библиотека Ленина',address:'Российская государственная библиотека, Воздвиженка 3/5, Москва',category:'Достопримечательность',emoji:'📚',lat:55.7515,lon:37.6096,photoQuery:'Russian State Library Moscow'},
+{name:'Лефортовский парк',address:'Лефортовский парк, Москва',category:'Парк',emoji:'🌳',lat:55.7597,lon:37.7007},
+{name:'Музей Победы',address:'Площадь Победы, 3, Москва',category:'Музей',emoji:'🏛️',lat:55.7364,lon:37.5026,photoQuery:'Victory Museum Moscow'},
+{name:'Парк «Покровский берег»',address:'Москва',category:'Парк',emoji:'🌿'},
+{name:'Тренажёр «Орион» в Музее космонавтики',address:'проспект Мира, 111, Москва',category:'Музей',emoji:'🚀',lat:55.8229,lon:37.6398,photoQuery:'Memorial Museum of Cosmonautics Moscow'},
+{name:'Теннис',address:'Москва',category:'Спорт',emoji:'🎾'},
+{name:'Летний кинотеатр / ресторан «Дальний Восток»',address:'ВДНХ, Москва',category:'Кино',emoji:'🎬'},
+{name:'Антикафе с сурикатами',address:'Москва',category:'Развлечение',emoji:'🐾'},
+{name:'Парк львов',address:'Московская область',category:'Развлечение',emoji:'🦁'},
+{name:'Лианозовский парк',address:'Угличская улица, 13, Москва',category:'Парк',emoji:'🌲',lat:55.8994,lon:37.5696},
+{name:'Царицыно',address:'Музей-заповедник Царицыно, Москва',category:'Парк',emoji:'🏰',lat:55.6154,lon:37.6823,photoQuery:'Tsaritsyno Museum Reserve Moscow'},
+{name:'Коломенское',address:'Музей-заповедник Коломенское, Москва',category:'Парк',emoji:'⛪',lat:55.6677,lon:37.6698,photoQuery:'Kolomenskoye Moscow'},
+{name:'Парк Москино',address:'Москва',category:'Кино',emoji:'🎥'},
+{name:'Архангельское',address:'Музей-усадьба Архангельское, Московская область',category:'Достопримечательность',emoji:'🏛️',lat:55.7879,lon:37.2840,photoQuery:'Arkhangelskoye Estate'},
+{name:'Сафари-парк Подмосковный',address:'Московская область',category:'Развлечение',emoji:'🦒'},
+{name:'Остров мечты',address:'проспект Андропова, 1, Москва',category:'Развлечение',emoji:'🎡',lat:55.6947,lon:37.6741,photoQuery:'Dream Island Moscow'},
+{name:'Хаски Лэнд',address:'Москва',category:'Развлечение',emoji:'🐕'},
+{name:'Парк Раздолье',address:'Одинцовский городской округ, Московская область',category:'Парк',emoji:'🌳'}
+].map((p,i)=>({...p,id:'seed-'+i,visited:false,rating:0,comment:'',photos:[]}));
+
+const $=id=>document.getElementById(id);
+const escapeHtml=(s='')=>String(s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+function normalizePlace(p,i){return {id:p.id||('legacy-'+i+'-'+Date.now()),name:p.name||'Без названия',address:p.address||'',category:p.category||guessCategory(p.name),emoji:p.emoji||'📍',visited:!!p.visited,rating:Number(p.rating)||0,comment:p.comment||'',lat:p.lat==null?null:Number(p.lat),lon:p.lon==null?null:Number(p.lon),photos:Array.isArray(p.photos)?p.photos:[],photoQuery:p.photoQuery||'',modifiedAt:p.modifiedAt||''}}
+function guessCategory(name=''){const n=name.toLowerCase();if(n.includes('парк')||n.includes('цариц')||n.includes('коломен'))return'Парк';if(n.includes('музей')||n.includes('библиотек'))return'Музей';if(n.includes('теннис'))return'Спорт';if(n.includes('кино'))return'Кино';return'Достопримечательность'}
+function loadPlaces(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY));if(Array.isArray(d))return d.map(normalizePlace)}catch(e){}return seed.map((p,i)=>normalizePlace(p,i))}
+let places=loadPlaces(),filter='all',activeId=null,activeTab='map',addRatingValue=0,addLat=null,addLon=null,previewId=null;
+function persist(){localStorage.setItem(STORAGE_KEY,JSON.stringify(places));renderAll();renderProfileSummary()}
+function placeById(id){return places.find(p=>p.id===id)}
+function cityFromAddress(a=''){if(/моск(ва|ве|вы)/i.test(a))return'Москва';if(/московск/i.test(a))return'Подмосковье';return a.split(',').slice(-2,-1)[0]?.trim()||'Место'}
+function showToast(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>$('toast').classList.remove('show'),1800)}
+
+function nowIso(){return new Date().toISOString()}
+function touch(p){if(p)p.modifiedAt=nowIso()}
+function renderProfileSummary(){const done=places.filter(p=>p.visited).length;const rated=places.filter(p=>p.rating>0).length;const notes=places.filter(p=>(p.comment||'').trim()).length;const el=$('dataSummary');if(el)el.innerHTML=`<span>${places.length} мест</span><span>${done} посещено</span><span>${rated} с оценкой</span><span>${notes} с заметками</span>`}
+function effectiveTheme(pref){if(pref==='dark'||pref==='light')return pref;return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
+function applyTheme(pref){localStorage.setItem(THEME_KEY,pref);const eff=effectiveTheme(pref);document.body.classList.toggle('theme-dark',eff==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.classList.toggle('active',b.dataset.theme===pref));const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=eff==='dark'?'#151f30':'#ffffff';try{if(window.AndroidBridge&&AndroidBridge.setDarkTheme)AndroidBridge.setDarkTheme(eff==='dark')}catch(e){}}
+function currentTheme(){return localStorage.getItem(THEME_KEY)||'system'}
+function xmlEscape(v=''){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
+function safeDateName(){return new Date().toISOString().slice(0,10)}
+function saveNativeFile(name,mime,content){try{if(window.AndroidBridge&&AndroidBridge.saveFile){AndroidBridge.saveFile(name,mime,content);return true}}catch(e){}const blob=new Blob([content],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true}
+function exportToExcel(){
+ const headers=['Название','Категория','Адрес','Посещено','Оценка (1-5)','Комментарий','Широта','Долгота','Последнее изменение'];
+ const rows=places.map(p=>[p.name,p.category,p.address,p.visited?'Да':'Нет',p.rating||'',p.comment||'',p.lat??'',p.lon??'',p.modifiedAt||'']);
+ const rowXml=a=>'<Row>'+a.map(v=>`<Cell><Data ss:Type="String">${xmlEscape(v)}</Data></Cell>`).join('')+'</Row>';
+ const xml=`<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Мои места"><Table>${rowXml(headers)}${rows.map(rowXml).join('')}</Table></Worksheet></Workbook>`;
+ saveNativeFile(`MoiMesta-${safeDateName()}.xls`,'application/vnd.ms-excel',xml);showToast('Выберите, куда сохранить Excel');
+}
+function makeBackup(){return JSON.stringify({format:BACKUP_FORMAT,version:BACKUP_VERSION,createdAt:nowIso(),appVersion:'3.0.0',theme:currentTheme(),places:places},null,2)}
+function exportBackup(){saveNativeFile(`MoiMesta-backup-${safeDateName()}.json`,'application/json',makeBackup());showToast('Выберите, куда сохранить копию')}
+function requestImportBackup(){try{if(window.AndroidBridge&&AndroidBridge.openBackup){AndroidBridge.openBackup();return}}catch(e){}showToast('Импорт доступен в Android-приложении')}
+function importBackupObject(data){
+ if(!data||data.format!==BACKUP_FORMAT||!Array.isArray(data.places))throw new Error('Это не резервная копия «Мои места»');
+ if(data.version>BACKUP_VERSION)throw new Error('Копия создана более новой версией приложения');
+ const imported=data.places.map((p,i)=>normalizePlace(p,i));
+ if(!imported.length&&!confirm('В резервной копии нет мест. Заменить текущие данные пустым списком?'))return false;
+ if(places.length&&!confirm(`В копии ${imported.length} мест. Текущие ${places.length} мест будут заменены. Продолжить?`))return false;
+ places=imported;localStorage.setItem(STORAGE_KEY,JSON.stringify(places));if(data.theme)applyTheme(data.theme);previewId=null;activeId=null;$('preview').classList.remove('open');syncMarkers();renderAll();fitAll();showToast(`Восстановлено мест: ${places.length}`);return true;
+}
+function importBackupFromNative(base64){try{const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));const text=new TextDecoder('utf-8').decode(bytes);const data=JSON.parse(text);importBackupObject(data)}catch(e){alert('Не удалось импортировать резервную копию: '+(e.message||e))}}
+window.importBackupFromNative=importBackupFromNative;
+window.onNativeFileSaved=function(ok,message){showToast(ok?(message||'Файл сохранён'):(message||'Не удалось сохранить файл'))}
+
+
+const map=L.map('map',{zoomControl:true,preferCanvas:true,attributionControl:true}).setView([55.751244,37.618423],10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+const markers=new Map();
+function markerIcon(p){const color=p.visited?'#16b993':(p.rating>=4?'#ffb719':'#1498f5');return L.divIcon({className:'',html:`<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:3px solid white;box-shadow:0 4px 11px #2c5f8d55"><span style="display:block;transform:rotate(45deg);text-align:center;line-height:28px;color:white;font-weight:900;font-size:13px">${p.visited?'✓':'•'}</span></div>`,iconSize:[34,34],iconAnchor:[17,34]})}
+function syncMarkers(){const ids=new Set(places.map(p=>p.id));for(const [id,m] of markers)if(!ids.has(id)){map.removeLayer(m);markers.delete(id)}places.forEach(p=>{if(p.lat==null||p.lon==null)return;let m=markers.get(p.id);if(!m){m=L.marker([p.lat,p.lon],{icon:markerIcon(p)}).addTo(map);m.on('click',()=>selectPreview(p.id));markers.set(p.id,m)}else{m.setLatLng([p.lat,p.lon]);m.setIcon(markerIcon(p))}})}
+function fitAll(){const pts=places.filter(p=>p.lat!=null&&p.lon!=null).map(p=>[p.lat,p.lon]);if(pts.length)map.fitBounds(pts,{padding:[40,40],maxZoom:11})}
+
+function ratingStars(p){const n=p.rating||0;return n?('★'.repeat(n)+'☆'.repeat(5-n)):'☆☆☆☆☆'}
+function photoThumb(p,cls=''){return p.photos?.[0]?`<img src="${escapeHtml(p.photos[0])}" alt="">`:escapeHtml(p.emoji||'📍')}
+function filteredPlaces(){const q=$('search').value.trim().toLowerCase();return places.filter(p=>{if(filter==='done'&&!p.visited)return false;if(filter==='todo'&&p.visited)return false;if(filter==='rated'&&!p.rating)return false;return !q||(`${p.name} ${p.address} ${p.category}`).toLowerCase().includes(q)})}
+function renderList(){const arr=filteredPlaces();$('listCount').textContent=`${arr.length} из ${places.length} мест`;$('placesList').innerHTML=arr.map(p=>`<article class="placeCard" data-id="${p.id}"><div class="placeImg">${photoThumb(p)}</div><div><h3>${escapeHtml(p.name)}</h3><div class="placeMeta">${escapeHtml(p.address||p.category)}</div><div class="placeStars">${p.rating?ratingStars(p):'☆ Без оценки'}</div></div><button class="visitTick ${p.visited?'done':''}" data-visit="${p.id}">${p.visited?'✓':''}</button></article>`).join('')||'<div class="profileCard">Ничего не найдено. Попробуйте изменить поиск или фильтр.</div>';
+ document.querySelectorAll('.placeCard').forEach(x=>x.onclick=e=>{if(e.target.closest('[data-visit]'))return;openDetail(x.dataset.id)});document.querySelectorAll('[data-visit]').forEach(b=>b.onclick=e=>{e.stopPropagation();const p=placeById(b.dataset.visit);p.visited=!p.visited;touch(p);persist()})}
+function renderStats(){const done=places.filter(p=>p.visited).length, rated=places.filter(p=>p.rating), avg=rated.length?(rated.reduce((s,p)=>s+p.rating,0)/rated.length).toFixed(1):'—';$('statDone').textContent=done;$('statAll').textContent=places.length;$('statAvg').textContent=avg;$('statFive').textContent=places.filter(p=>p.rating===5).length;$('statNotes').textContent=places.filter(p=>p.comment.trim()).length;$('statProgress').style.width=(places.length?done/places.length*100:0)+'%'}
+function renderAll(){syncMarkers();renderList();renderStats();if(previewId&&placeById(previewId))renderPreview(placeById(previewId));if(activeId&&placeById(activeId)&&$('detailOverlay').classList.contains('open'))renderDetail()}
+
+function selectPreview(id){previewId=id;const p=placeById(id);if(!p)return;renderPreview(p);$('preview').classList.add('open');if(!p.photos?.length)loadPhotos(p).then(()=>renderPreview(p))}
+function renderPreview(p){$('previewName').textContent=p.name;$('previewAddress').innerHTML=`<span>⌖</span><span>${escapeHtml(p.address||p.category)}</span>`;$('previewThumb').innerHTML=photoThumb(p);$('previewStars').innerHTML=`<span>${ratingStars(p)}</span><span class="ratingNumber">${p.rating?p.rating.toFixed(1):'без оценки'}</span>`;$('previewPhotos').innerHTML=(p.photos||[]).slice(0,3).map(u=>`<div class="miniPhoto"><img src="${escapeHtml(u)}" alt=""></div>`).join('')||`<div class="miniPhoto">${p.emoji}</div><div class="miniPhoto">+ фото</div>`}
+$('previewMore').onclick=()=>previewId&&openDetail(previewId);
+
+async function loadPhotos(p){if(p.photos?.length)return p.photos;const q=(p.photoQuery||`${p.name} ${p.address||'Москва'}`).trim();const url='https://commons.wikimedia.org/w/api.php?origin=*&action=query&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch='+encodeURIComponent(q)+'&prop=imageinfo&iiprop=url&iiurlwidth=1000&format=json';try{const r=await fetch(url),d=await r.json();const photos=Object.values(d.query?.pages||{}).map(x=>x.imageinfo?.[0]?.thumburl).filter(Boolean).slice(0,4);if(photos.length){p.photos=photos;localStorage.setItem(STORAGE_KEY,JSON.stringify(places));renderList()}return photos}catch(e){return[]}}
+
+function openDetail(id){activeId=id;const p=placeById(id);if(!p)return;$('detailOverlay').classList.add('open');renderDetail();loadPhotos(p).then(()=>{if(activeId===id)renderDetail()})}
+function renderDetail(){const p=placeById(activeId);if(!p)return;$('detailName').textContent=p.name;$('detailAddress').innerHTML=`<span>⌖</span><span>${escapeHtml(p.address||'Адрес не указан')}</span>`;$('detailCategory').textContent=p.category;$('detailCity').textContent=cityFromAddress(p.address);const photos=p.photos||[];$('detailHero').innerHTML=photos[0]?`<img src="${escapeHtml(photos[0])}" alt="${escapeHtml(p.name)}"><span class="counter">${photos.length} фото</span>`:`${escapeHtml(p.emoji)}<span class="counter">Фото загружаются</span>`;$('detailGallery').innerHTML=photos.slice(0,4).map(u=>`<div class="galleryItem"><img src="${escapeHtml(u)}" alt=""></div>`).join('')||`<div class="galleryItem">Фотографии появятся здесь</div><div class="galleryItem">📷</div>`;$('detailVisited').className='visitedBig '+(p.visited?'done':'');$('detailVisited').textContent=p.visited?'✓ Посещено':'Отметить как посещённое';$('detailComment').value=p.comment||'';$('detailRating').innerHTML='';for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='starBtn '+(i<=p.rating?'on':'');b.textContent='★';b.onclick=()=>{p.rating=p.rating===i?0:i;touch(p);persist();renderDetail()};$('detailRating').appendChild(b)}const val=document.createElement('span');val.className='rateValue';val.textContent=p.rating?`${p.rating}.0`:'—';$('detailRating').appendChild(val)}
+$('detailBack').onclick=()=>{$('detailOverlay').classList.remove('open');activeId=null};$('detailDone').onclick=()=>{$('detailOverlay').classList.remove('open');showToast('Сохранено')};$('detailVisited').onclick=()=>{const p=placeById(activeId);if(!p)return;p.visited=!p.visited;touch(p);persist();renderDetail()};$('detailComment').oninput=()=>{const p=placeById(activeId);if(p){p.comment=$('detailComment').value;touch(p);localStorage.setItem(STORAGE_KEY,JSON.stringify(places));renderStats();renderProfileSummary()}};$('detailDelete').onclick=()=>{const p=placeById(activeId);if(!p)return;if(confirm(`Удалить «${p.name}»?`)){places=places.filter(x=>x.id!==p.id);previewId=null;$('preview').classList.remove('open');$('detailOverlay').classList.remove('open');activeId=null;persist();showToast('Место удалено')}};$('detailMapBtn').onclick=()=>{const p=placeById(activeId);$('detailOverlay').classList.remove('open');switchTab('map');if(p?.lat!=null){map.setView([p.lat,p.lon],14);selectPreview(p.id)}else showToast('Точка на карте ещё не найдена')};
+
+let addMap=null,addMarker=null;
+function resetAdd(){addRatingValue=0;addLat=null;addLon=null;$('addName').value='';$('addAddress').value='';$('addComment').value='';$('addCategory').value='Достопримечательность';$('addStatus').textContent='';renderAddRating();if(addMarker&&addMap){addMap.removeLayer(addMarker);addMarker=null}}
+function openAdd(){resetAdd();$('addOverlay').classList.add('open');setTimeout(()=>{if(!addMap){addMap=L.map('addMap',{zoomControl:false,attributionControl:false}).setView([55.751244,37.618423],11);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(addMap);addMap.on('click',async e=>{setAddPoint(e.latlng.lat,e.latlng.lng);if(!$('addAddress').value.trim())await reverseGeocode(e.latlng.lat,e.latlng.lng)})}else addMap.invalidateSize();addMap.setView([55.751244,37.618423],11)},180)}
+function setAddPoint(lat,lon){addLat=lat;addLon=lon;if(addMarker)addMarker.setLatLng([lat,lon]);else addMarker=L.marker([lat,lon]).addTo(addMap);$('addStatus').textContent='Точка выбрана на карте'}
+function renderAddRating(){$('addRating').innerHTML='';for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='starBtn '+(i<=addRatingValue?'on':'');b.textContent='★';b.onclick=()=>{addRatingValue=addRatingValue===i?0:i;renderAddRating()};$('addRating').appendChild(b)}}
+async function reverseGeocode(lat,lon){try{const u=`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=ru&lat=${lat}&lon=${lon}`;const r=await fetch(u),d=await r.json();if(d.display_name)$('addAddress').value=d.display_name}catch(e){}}
+async function findAddAddress(){const q=$('addAddress').value.trim()||$('addName').value.trim();if(!q){$('addStatus').textContent='Введите адрес или название';return}$('addStatus').textContent='Ищу адрес…';try{const u='https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ru&q='+encodeURIComponent(q);const r=await fetch(u),a=await r.json();if(a[0]){setAddPoint(+a[0].lat,+a[0].lon);if(!$('addAddress').value.trim())$('addAddress').value=a[0].display_name;addMap.setView([addLat,addLon],15);$('addStatus').textContent='Адрес найден ✓'}else $('addStatus').textContent='Не удалось найти. Можно выбрать точку вручную на карте.'}catch(e){$('addStatus').textContent='Нет соединения. Выберите точку на карте вручную.'}}
+async function saveAdd(){const name=$('addName').value.trim();if(!name){$('addStatus').textContent='Введите название места';$('addName').focus();return}if(addLat==null&&$('addAddress').value.trim())await findAddAddress();const cat=$('addCategory').value;const emoji=cat==='Парк'?'🌳':cat==='Музей'?'🏛️':cat==='Спорт'?'🎾':cat==='Кино'?'🎬':cat==='Кафе / ресторан'?'🍽️':cat==='Развлечение'?'🎡':'📍';const p={id:'custom-'+Date.now(),name,address:$('addAddress').value.trim(),category:cat,emoji,visited:false,rating:addRatingValue,comment:$('addComment').value.trim(),lat:addLat,lon:addLon,photos:[],modifiedAt:nowIso()};places.unshift(p);localStorage.setItem(STORAGE_KEY,JSON.stringify(places));$('addOverlay').classList.remove('open');renderAll();switchTab('map');if(p.lat!=null){map.setView([p.lat,p.lon],14);selectPreview(p.id)}else selectPreview(p.id);showToast('Место добавлено')}
+$('fab').onclick=openAdd;$('addBack').onclick=()=>$('addOverlay').classList.remove('open');$('addSave').onclick=saveAdd;$('addSaveTop').onclick=saveAdd;$('findAddress').onclick=findAddAddress;
+
+function switchTab(tab){activeTab=tab;document.body.classList.remove('tab-map','tab-list','tab-stats','tab-profile');document.body.classList.add('tab-'+tab);document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id==='screen-'+tab));document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('fab').classList.toggle('hidden',tab==='profile');if(tab==='map')setTimeout(()=>map.invalidateSize(),50);if(tab==='list')renderList();if(tab==='stats')renderStats()}
+document.querySelectorAll('.navBtn').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));$('profileShortcut').onclick=()=>switchTab('profile');$('fitAll').onclick=fitAll;document.querySelectorAll('.themeBtn').forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));$('exportExcel').onclick=exportToExcel;$('exportBackup').onclick=exportBackup;$('importBackup').onclick=requestImportBackup;$('search').oninput=()=>{renderList();if(activeTab!=='list')switchTab('list')};document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;renderList();if(activeTab==='map'){const shown=new Set(filteredPlaces().map(p=>p.id));markers.forEach((m,id)=>m.setOpacity(shown.has(id)?1:.2))}});
+
+async function geocodeMissing(){const missing=places.filter(p=>p.lat==null&&p.lon==null).slice(0,6);for(const p of missing){try{const q=[p.name,p.address].filter(Boolean).join(', ');const u='https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ru&q='+encodeURIComponent(q);const r=await fetch(u),a=await r.json();if(a[0]){p.lat=+a[0].lat;p.lon=+a[0].lon;localStorage.setItem(STORAGE_KEY,JSON.stringify(places));syncMarkers()}}catch(e){}await new Promise(r=>setTimeout(r,1100))}}
+function handleAndroidBack(){
+  if($('addOverlay').classList.contains('open')){$('addOverlay').classList.remove('open');return true}
+  if($('detailOverlay').classList.contains('open')){$('detailOverlay').classList.remove('open');activeId=null;return true}
+  if($('preview').classList.contains('open')){$('preview').classList.remove('open');previewId=null;return true}
+  if(activeTab!=='map'){switchTab('map');return true}
+  return false
+}
+applyTheme(currentTheme());renderAddRating();renderAll();renderProfileSummary();if(window.matchMedia){window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(currentTheme()==='system')applyTheme('system')})}setTimeout(()=>{fitAll();geocodeMissing()},300);
+</script>
+</body>
+</html>
