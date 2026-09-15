@@ -1,0 +1,65 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v7
+
+      - name: Set up Gradle 9.6
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.6.0'
+          cache-disabled: false
+
+      - name: Verify Android build environment
+        shell: bash
+        run: |
+          set -euxo pipefail
+          java -version
+          gradle --version
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
+          test -n "${ANDROID_SDK_ROOT:-}"
+          test -d "$ANDROID_SDK_ROOT/platforms/android-37"
+          test -d "$ANDROID_SDK_ROOT/build-tools/36.0.0"
+          test -f build.gradle
+          test -f settings.gradle
+          test -f app/build.gradle
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          gradle --no-daemon --stacktrace --warning-mode all :app:assembleDebug
+
+      - name: Prepare APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          cp "$APK" "MoiMesta-v3.0.2.apk"
+          ls -lh "MoiMesta-v3.0.2.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: MoiMesta-APK-v3.0.2
+          path: MoiMesta-v3.0.2.apk
+          if-no-files-found: error
+          retention-days: 14
